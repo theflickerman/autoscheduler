@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>automatic scheduler</title>
+        <style>
+            * {
+                box-sizing: border-box;
+                background-color: ghostwhite;
+            }
+
+            .field {
+                width: 100%;
+                height: 100px;
+                border-style: solid;
+                border-width: 8px;
+                border-left: 8px;
+                border-color: turquoise;
+                font-size: 50px;
+            }
+
+            h2 {
+                font-weight: normal;
+                font-size: 275%;
+                color: turquoise;
+            }
+
+            .btn {
+                width: 150px;
+                height: 110px;
+                background-color: turquoise;
+                font-size: 40px;
+            }
+
+            hr {
+                color: turquoise;
+            }
+            
+        </style>
+    </head>
+
+    <body>
+
+        <input name="sect_time" type="text" value="8:00" class="field">
+        <input name="dogs_before" type="text" value="+ " class="field">
+        <input name="name" type="text" value="name" class="field">
+        <input name="ring" type="text" value="ring" class="field">
+        <input name="breakdown" type="text" value="0-0-0-0" class="field">
+        <input name="judge" type="text" value="judge" class="field">
+
+        <button type="button" onclick="onPress()" class="btn">add</button>
+
+        <script>
+
+            const form = document.querySelectorAll('button')[0];
+            const sect_time = document.querySelector("[name='sect_time']");
+            const dogs_before = document.querySelector("[name='dogs_before']");
+            const name = document.querySelector("[name='name']");
+            const ring = document.querySelector("[name='ring']");
+            const breakdown = document.querySelector("[name='breakdown']");
+            const judge = document.querySelector("[name='judge']");
+
+            let scheduleData = [];
+
+            function buildRingtimeString(params) {
+                return params.sect_time + "+" + params.dogs_before + "&nbsp;&nbsp&nbsp" + params.est_time + "&nbsp;&nbsp;&nbsp" + params.name + " &nbsp;&nbsp;&nbsp" + params.ring + "&nbsp;&nbsp;&nbsp" + params.breakdown + "&nbsp;&nbsp;&nbsp" + params.judge;
+            }
+
+            function addRingtime(params) {
+                
+                let elementDestroyer;
+                for(let i = 0; i < scheduleData.length; i++) {
+                    elementDestroyer = document.querySelector('h2');
+                    elementDestroyer.parentElement.removeChild(elementDestroyer);
+                    elementDestroyer = document.querySelector('hr');
+                    elementDestroyer.parentElement.removeChild(elementDestroyer);
+                }
+                
+                scheduleData.push(params);
+                scheduleData.sort(function (a, b) {
+                    return a.index - b.index;
+                });
+
+                for(let i = 0; i < scheduleData.length; i++){
+                    const li = document.createElement('h2');
+                    li.setAttribute("id", i)
+                    li.innerHTML = buildRingtimeString(scheduleData[i]);
+                    document.body.appendChild(li);
+                    document.body.appendChild(document.createElement('hr'))
+                }
+  
+            }
+
+            function calculateRingtime(sect_time_input, dogs_before_input, name_input, ring_input, breakdown_input, judge_input) {
+                
+                let sect_time_hour = parseInt(sect_time_input.split(":")[0]);
+                let sect_time_min = parseInt(sect_time_input.split(":")[1]);
+
+                let sect_time_index = (sect_time_hour * 60) + sect_time_min;
+                if (sect_time_index < 419) {
+                    sect_time_index += 720;
+                }
+
+                let est_time_index = 2 * eval(dogs_before_input) + sect_time_index;
+                let est_time_hour = Math.floor(est_time_index / 60);
+                if (est_time_hour > 12) {
+                    est_time_hour -= 12;
+                }
+                let est_time_min = est_time_index % 60;
+
+                let str_est_time_min = "";
+                if (est_time_min < 10) {
+                    str_est_time_min += "0";
+                }
+                str_est_time_min += est_time_min;
+
+                str_est_time = est_time_hour + ":" + str_est_time_min;
+
+                return {
+                    sect_time: sect_time_input,
+                    dogs_before: eval(dogs_before_input),
+                    est_time: str_est_time,
+                    index : est_time_index,
+                    name: name_input,
+                    ring: ring_input,
+                    breakdown: breakdown_input,
+                    judge: judge_input
+                }
+            }
+
+            function onPress() {
+                event.preventDefault();
+                let params = calculateRingtime(sect_time.value, dogs_before.value, name.value, ring.value, breakdown.value, judge.value);
+                addRingtime(params);
+            }
+
+        </script>
+    
+    </body>
+
+</html>
